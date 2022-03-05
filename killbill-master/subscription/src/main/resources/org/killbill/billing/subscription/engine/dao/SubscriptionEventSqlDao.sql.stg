@@ -1,0 +1,117 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "subscription_events"
+historyTableName() ::= "subscription_event_history"
+
+andCheckSoftDeletionWithComma(prefix) ::= "and <prefix>is_active = '1'"
+
+extraTableFieldsWithComma(prefix) ::= <<
+, <prefix>record_id as total_ordering
+>>
+
+defaultOrderBy(prefix) ::= <<
+order by <prefix>effective_date ASC, <recordIdField(prefix)> ASC
+>>
+
+tableFields(prefix) ::= <<
+  <prefix> event_type
+, <prefix> user_type
+, <prefix> effective_date
+, <prefix> subscription_id
+, <prefix> plan_name
+, <prefix> phase_name
+, <prefix> price_list_name
+, <prefix> billing_cycle_day_local
+, <prefix> is_active
+, <prefix> created_by
+, <prefix> created_date
+, <prefix> updated_by
+, <prefix> updated_date
+>>
+
+tableValues() ::= <<
+  :eventType
+, :userType
+, :effectiveDate
+, :subscriptionId
+, :planName
+, :phaseName
+, :priceListName
+, :billingCycleDayLocal
+, :isActive
+, :createdBy
+, :createdDate
+, :updatedBy
+, :updatedDate
+>>
+
+unactiveEvent() ::= <<
+update <tableName()>
+set
+is_active = '0'
+, updated_by = :createdBy
+, updated_date = :updatedDate
+where
+id = :id
+<AND_CHECK_TENANT("")>
+;
+>>
+
+getFutureActiveEventForSubscription() ::= <<
+select <allTableFields("")>
+, record_id as total_ordering
+from <tableName()>
+where
+subscription_id = :subscriptionId
+and is_active = '1'
+and effective_date > :now
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+
+getFutureOrPresentActiveEventForSubscription() ::= <<
+select <allTableFields("")>
+, record_id as total_ordering
+from <tableName()>
+where
+subscription_id = :subscriptionId
+and is_active = '1'
+and effective_date >= :now
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+getActiveEventsForSubscription() ::= <<
+select <allTableFields("")>
+, record_id as total_ordering
+from <tableName()>
+where
+subscription_id = :subscriptionId
+and is_active = '1'
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+getActiveByAccountRecordId() ::= <<
+select
+<allTableFields("se.")>
+from <tableName()> se
+join (select
+      distinct(se1.subscription_id)
+      from <tableName()> se1
+      left join <tableName()> se2
+      on se1.subscription_id = se2.subscription_id and se2.user_type = 'CANCEL' and se2.is_active
+      where
+      se1.user_type = 'CREATE' and se1.is_active
+      and (se2.id IS NULL or se2.effective_date \> :cutoffDt)
+      and <accountRecordIdField("se1.")> = :accountRecordId)  tmp on tmp.subscription_id = se.subscription_id
+where
+<accountRecordIdField("se.")> = :accountRecordId
+<AND_CHECK_TENANT("se.")>
+<defaultOrderBy("se.")>
+;
+>>

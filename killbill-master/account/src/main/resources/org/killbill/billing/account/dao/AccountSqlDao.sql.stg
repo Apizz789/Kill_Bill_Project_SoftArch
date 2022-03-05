@@ -1,0 +1,197 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "accounts"
+
+historyTableName() ::= "account_history"
+
+tableFields(prefix) ::= <<
+  <prefix>external_key
+, <prefix>email
+, <prefix>name
+, <prefix>first_name_length
+, <prefix>currency
+, <prefix>billing_cycle_day_local
+, <prefix>parent_account_id
+, <prefix>is_payment_delegated_to_parent
+, <prefix>payment_method_id
+, <prefix>reference_time
+, <prefix>time_zone
+, <prefix>locale
+, <prefix>address1
+, <prefix>address2
+, <prefix>company_name
+, <prefix>city
+, <prefix>state_or_province
+, <prefix>country
+, <prefix>postal_code
+, <prefix>phone
+, <prefix>notes
+, <prefix>migrated
+, <prefix>created_by
+, <prefix>created_date
+, <prefix>updated_by
+, <prefix>updated_date
+>>
+
+tableValues() ::= <<
+  :externalKey
+, :email
+, :name
+, :firstNameLength
+, :currency
+, :billingCycleDayLocal
+, :parentAccountId
+, :isPaymentDelegatedToParent
+, :paymentMethodId
+, :referenceTime
+, :timeZone
+, :locale
+, :address1
+, :address2
+, :companyName
+, :city
+, :stateOrProvince
+, :country
+, :postalCode
+, :phone
+, :notes
+, :migrated
+, :createdBy
+, :createdDate
+, :updatedBy
+, :updatedDate
+>>
+
+/** The accounts table doesn't have an account_record_id column (it's the record_id) **/
+accountRecordIdFieldWithComma(prefix) ::= ""
+accountRecordIdValueWithComma() ::= ""
+
+update() ::= <<
+update accounts set
+  email = :email
+, name = :name
+, first_name_length = :firstNameLength
+, currency = :currency
+, billing_cycle_day_local = :billingCycleDayLocal
+, parent_account_id = :parentAccountId
+, is_payment_delegated_to_parent = :isPaymentDelegatedToParent
+, payment_method_id = :paymentMethodId
+, time_zone = :timeZone
+, locale = :locale
+, address1 = :address1
+, address2 = :address2
+, company_name = :companyName
+, city = :city
+, state_or_province = :stateOrProvince
+, country = :country
+, postal_code = :postalCode
+, phone = :phone
+, notes = :notes
+, updated_date = :updatedDate
+, updated_by = :updatedBy
+where id = :id
+<AND_CHECK_TENANT("")>
+;
+>>
+
+
+updatePaymentMethod() ::= <<
+    UPDATE accounts
+    SET payment_method_id = :paymentMethodId
+    , updated_date = :updatedDate
+    , updated_by = :updatedBy
+    WHERE id = :id <AND_CHECK_TENANT("")>;
+>>
+
+getAccountByKey() ::= <<
+    select <allTableFields("")>
+    from accounts
+    where external_key = :externalKey <AND_CHECK_TENANT("")>;
+>>
+
+getBCD() ::= <<
+    select billing_cycle_day_local
+    from accounts
+    where id = :id <AND_CHECK_TENANT("")>;
+>>
+
+searchQuery(prefix) ::= <<
+     <idField(prefix)> = :searchKey
+  or <prefix>name like :likeSearchKey
+  or <prefix>email like :likeSearchKey
+  or <prefix>external_key like :likeSearchKey
+  or <prefix>company_name like :likeSearchKey
+>>
+
+/** Unfortunately, we need to force MySQL to use the individual indexes */
+luckySearch() ::= <<
+select
+<allTableFields("t.")>
+from <tableName()> t
+join (
+  select distinct <recordIdField("")>
+  from (
+    (
+      select <recordIdField("")>
+      from <tableName()>
+      where <idField("")> = :searchKey
+      <andCheckSoftDeletionWithComma("")>
+      <AND_CHECK_TENANT("")>
+      limit 1
+    )
+    union all
+    (
+      select <recordIdField("")>
+      from <tableName()>
+      where name = :searchKey
+      <andCheckSoftDeletionWithComma("")>
+      <AND_CHECK_TENANT("")>
+      limit 1
+    )
+    union all
+    (
+      select <recordIdField("")>
+      from <tableName()>
+      where email = :searchKey
+      <andCheckSoftDeletionWithComma("")>
+      <AND_CHECK_TENANT("")>
+      limit 1
+    )
+    union all
+    (
+      select <recordIdField("")>
+      from <tableName()>
+      where external_key = :searchKey
+      <andCheckSoftDeletionWithComma("")>
+      <AND_CHECK_TENANT("")>
+      limit 1
+    )
+    union all
+    (
+      select <recordIdField("")>
+      from <tableName()>
+      where company_name = :searchKey
+      <andCheckSoftDeletionWithComma("")>
+      <AND_CHECK_TENANT("")>
+      limit 1
+    )
+  ) search_with_idx
+) optimization on <recordIdField("optimization.")> = <recordIdField("t.")>
+limit 1
+;
+>>
+
+getIdFromKey() ::= <<
+    SELECT id
+    FROM accounts
+    WHERE external_key = :externalKey <AND_CHECK_TENANT("")>;
+>>
+
+getAccountsByParentId() ::= <<
+    select <allTableFields("")>
+    from accounts
+    where parent_account_id = :parentAccountId
+    <AND_CHECK_TENANT("")>
+    <defaultOrderBy("")>
+    ;
+>>

@@ -1,0 +1,85 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Kill Bill APIs</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./css/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="./css/killbill-swagger.css" />
+    <link rel="icon" type="image/png" href="images/favicon.ico" />
+    <style>
+      html
+      {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
+
+      *,
+      *:before,
+      *:after
+      {
+        box-sizing: inherit;
+      }
+
+      body
+      {
+        margin:0;
+        background: #fafafa;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="./lib/swagger-ui-bundle.js"> </script>
+    <script src="./lib/swagger-ui-standalone-preset.js"> </script>
+    <script>
+    window.onload = function() {
+      var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + window.location.pathname.replace(/(.*)(\/[^\/]*?)$/, '$1/swagger.json')
+
+      // Build a system
+      const ui = SwaggerUIBundle({
+        url: url,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        docExpansion: 'none',
+        tagsSorter: function(a, b) {
+            var tagA = a.toUpperCase(); // ignore upper and lowercase
+            var tagB = b.toUpperCase(); // ignore upper and lowercase
+            if (tagA < tagB) {
+                return -1;
+            }
+            if (tagA > tagB) {
+                return 1;
+            }
+
+            // names must be equal
+            return 0;
+        },
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl,
+        ],
+        layout: "StandaloneLayout"
+      });
+
+      window.ui = ui
+
+      setKillbillLog();
+    }
+
+    function setKillbillLog() {
+        var logoImageContainer = document.querySelector(".swagger-ui .topbar a img");
+        logoImageContainer.width = 170;
+        logoImageContainer.height = 40;
+        logoImageContainer.src = "./images/killbill_logo.png";
+    }
+  </script>
+  </body>
+</html>

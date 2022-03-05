@@ -1,0 +1,88 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "subscriptions"
+historyTableName() ::= "subscription_history"
+
+tableFields(prefix) ::= <<
+  <prefix>bundle_id
+, <prefix>external_key
+, <prefix>category
+, <prefix>start_date
+, <prefix>bundle_start_date
+, <prefix>charged_through_date
+, <prefix>migrated
+, <prefix>created_by
+, <prefix>created_date
+, <prefix>updated_by
+, <prefix>updated_date
+>>
+
+tableValues() ::= <<
+  :bundleId
+, :externalKey
+, :category
+, :startDate
+, :bundleStartDate
+, :chargedThroughDate
+, :migrated
+, :createdBy
+, :createdDate
+, :updatedBy
+, :updatedDate
+>>
+
+getSubscriptionByExternalKey() ::= <<
+select
+<allTableFields("")>
+from <tableName()>
+where external_key = :externalKey
+<AND_CHECK_TENANT("")>
+;
+>>
+
+
+getSubscriptionsFromBundleId() ::= <<
+select
+<allTableFields("")>
+from <tableName()>
+where bundle_id = :bundleId
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+getActiveByAccountRecordId() ::= <<
+select
+<allTableFields("s.")>
+from subscriptions s
+left join subscription_events se on se.subscription_id = s.id and se.user_type = 'CANCEL' and se.is_active
+where
+(se.id IS NULL or se.effective_date \> :cutoffDt)
+and <accountRecordIdField("s.")> = :accountRecordId
+<AND_CHECK_TENANT("s.")>
+<defaultOrderBy("s.")>
+;
+>>
+
+
+updateChargedThroughDate() ::= <<
+update <tableName()>
+set
+charged_through_date = :chargedThroughDate
+, updated_by = :createdBy
+, updated_date = :updatedDate
+where id = :id
+<AND_CHECK_TENANT("")>
+;
+>>
+
+updateChargedThroughDates() ::= <<
+update <tableName()>
+set
+charged_through_date = :chargedThroughDate
+, updated_by = :createdBy
+, updated_date = :updatedDate
+where <idField("")> in (<ids>)
+<AND_CHECK_TENANT("")>
+;
+>>

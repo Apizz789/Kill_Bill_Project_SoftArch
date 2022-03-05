@@ -1,0 +1,75 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "rolled_up_usage"
+
+
+tableFields(prefix) ::= <<
+  <prefix>subscription_id
+, <prefix>unit_type
+, <prefix>record_date
+, <prefix>amount
+, <prefix>tracking_id
+, <prefix>created_by
+, <prefix>created_date
+>>
+
+tableValues() ::= <<
+  :subscriptionId
+, :unitType
+, :recordDate
+, :amount
+, :trackingId
+, :createdBy
+, :createdDate
+>>
+
+recordsWithTrackingIdExist() ::= <<
+select
+  1
+from <tableName()>
+where subscription_id = :subscriptionId
+and tracking_id = :trackingId
+<AND_CHECK_TENANT("")>
+limit 1
+;
+>>
+
+getUsageForSubscription() ::= <<
+select
+  <allTableFields("")>
+from <tableName()>
+where subscription_id = :subscriptionId
+and record_date >= :startDate
+and record_date \< :endDate
+and unit_type = :unitType
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+getAllUsageForSubscription() ::= <<
+select
+  <allTableFields("")>
+from <tableName()>
+where subscription_id = :subscriptionId
+and record_date >= :startDate
+and record_date \< :endDate
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+/** This is the only query used for invoicing, hence the <= :endDate (to handle usage data at the cancellation day) **/
+getRawUsageForAccount() ::= <<
+select
+  <allTableFields("")>
+from <tableName()>
+where account_record_id = :accountRecordId
+and record_date >= :startDate
+and record_date \<= :endDate
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+

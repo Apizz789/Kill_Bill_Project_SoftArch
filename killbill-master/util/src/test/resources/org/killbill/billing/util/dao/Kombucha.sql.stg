@@ -1,0 +1,25 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "kombucha"
+
+historyTableName() ::= "kombucha_history"
+
+tableFields(prefix) ::= <<
+  <prefix>tea
+, <prefix>mushroom
+, <prefix>sugar
+>>
+
+tableValues() ::= <<
+  :tea
+, :mushroom
+, :sugar
+>>
+
+isItTimeForKombucha() ::= <<
+select count(*) = 0 as is_time from kombucha;
+>>
+
+searchQuery(prefix) ::= <<
+  <prefix>tea = :searchKey
+>>

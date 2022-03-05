@@ -1,0 +1,94 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "invoices"
+historyTableName() ::= "invoice_history"
+
+tableFields(prefix) ::= <<
+  <prefix>account_id
+, <prefix>invoice_date
+, <prefix>target_date
+, <prefix>currency
+, <prefix>status
+, <prefix>migrated
+, <prefix>parent_invoice
+, <prefix>created_by
+, <prefix>created_date
+>>
+
+tableValues() ::= <<
+  :accountId
+, :invoiceDate
+, :targetDate
+, :currency
+, :status
+, :migrated
+, :parentInvoice
+, :createdBy
+, :createdDate
+>>
+
+extraTableFieldsWithComma(prefix) ::= <<
+, <prefix>record_id as invoice_number
+>>
+
+getInvoicesBySubscription() ::= <<
+  SELECT <allTableFields("i.")>
+  FROM <tableName()> i
+  JOIN invoice_items ii ON i.id = ii.invoice_id
+  WHERE ii.subscription_id = :subscriptionId AND i.migrated = '0'
+  <AND_CHECK_TENANT("i.")>
+  <AND_CHECK_TENANT("ii.")>
+  ;
+>>
+
+searchQuery(prefix) ::= <<
+     <idField(prefix)> = :searchKey
+  or <prefix>account_id = :searchKey
+  or <prefix>currency = :searchKey
+>>
+
+getInvoiceIdByPaymentId() ::= <<
+  SELECT i.id
+    FROM <tableName()> i, invoice_payments ip
+   WHERE ip.invoice_id = i.id
+     AND ip.payment_id = :paymentId
+   <AND_CHECK_TENANT("i.")>
+   <AND_CHECK_TENANT("ip.")>
+>>
+
+
+getInvoiceByInvoiceItemId() ::= <<
+  SELECT <allTableFields(("i."))>
+  FROM <tableName()> i
+  INNER JOIN invoice_items items ON items.invoice_id = i.id
+  WHERE items.id = :invoiceItemId
+  <AND_CHECK_TENANT("i.")>
+  <AND_CHECK_TENANT("items.")>
+  ;
+>>
+
+updateStatusAndTargetDate() ::= <<
+    UPDATE <tableName()>
+    SET status = :status, target_date = :targetDate
+    WHERE id = :id
+    <AND_CHECK_TENANT("")>;
+>>
+
+getParentDraftInvoice() ::= <<
+  SELECT <allTableFields("")>
+    FROM <tableName()>
+   WHERE account_id = :accountId
+     AND status = 'DRAFT'
+   <AND_CHECK_TENANT("")>
+   <defaultOrderBy("")>
+>>
+
+getInvoiceByAccountRecordIdAfter() ::= <<
+  SELECT <allTableFields("")>
+    FROM <tableName()>
+   where <accountRecordIdField("")> = :accountRecordId
+     AND target_date >= :targetDate
+     <andCheckSoftDeletionWithComma("")>
+   <AND_CHECK_TENANT("")>
+   <defaultOrderBy("")>
+>>

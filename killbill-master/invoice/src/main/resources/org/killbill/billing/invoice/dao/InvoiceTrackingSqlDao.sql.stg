@@ -1,0 +1,69 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "invoice_tracking_ids"
+historyTableName() ::= "invoice_tracking_id_history"
+
+tableFields(prefix) ::= <<
+  <prefix>tracking_id
+, <prefix>invoice_id
+, <prefix>subscription_id
+, <prefix>unit_type
+, <prefix>record_date
+, <prefix>is_active
+, <prefix>created_by
+, <prefix>created_date
+, <prefix>updated_by
+, <prefix>updated_date
+>>
+
+tableValues() ::= <<
+  :trackingId
+, :invoiceId
+, :subscriptionId
+, :unitType
+, :recordDate
+, :isActive
+, :createdBy
+, :createdDate
+, :updatedBy
+, :updatedDate
+>>
+
+deactivateByIds() ::= <<
+update <tableName()>
+set
+  is_active = '0'
+, updated_by = :createdBy
+, updated_date = :updatedDate
+where <idField("")> in (<ids>)
+<AND_CHECK_TENANT("")>
+;
+>>
+
+getTrackingsByDateRange() ::= <<
+select
+  <allTableFields("")>
+from <tableName()>
+where
+record_date >= :startDate
+and record_date \< :endDate
+and <accountRecordIdField("")> = :accountRecordId
+and is_active = '1'
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>
+
+
+getTrackingsForInvoices(invoiceIds) ::= <<
+select
+  <allTableFields("")>
+from <tableName()>
+where
+invoice_id in (<invoiceIds>)
+and <accountRecordIdField("")> = :accountRecordId
+and is_active = '1'
+<AND_CHECK_TENANT("")>
+<defaultOrderBy("")>
+;
+>>

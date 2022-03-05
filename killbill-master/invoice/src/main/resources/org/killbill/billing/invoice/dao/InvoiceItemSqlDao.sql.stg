@@ -1,0 +1,150 @@
+import "org/killbill/billing/util/entity/dao/EntitySqlDao.sql.stg"
+
+tableName() ::= "invoice_items"
+historyTableName() ::= "invoice_item_history"
+
+tableFields(prefix) ::= <<
+  <prefix>type
+, <prefix>invoice_id
+, <prefix>account_id
+, <prefix>child_account_id
+, <prefix>bundle_id
+, <prefix>subscription_id
+, <prefix>description
+, <prefix>product_name
+, <prefix>plan_name
+, <prefix>phase_name
+, <prefix>usage_name
+, <prefix>catalog_effective_date
+, <prefix>start_date
+, <prefix>end_date
+, <prefix>amount
+, <prefix>rate
+, <prefix>currency
+, <prefix>linked_item_id
+, <prefix>quantity
+, <prefix>item_details
+, <prefix>created_by
+, <prefix>created_date
+>>
+
+tableValues() ::= <<
+  :type
+, :invoiceId
+, :accountId
+, :childAccountId
+, :bundleId
+, :subscriptionId
+, :description
+, :productName
+, :planName
+, :phaseName
+, :usageName
+, :catalogEffectiveDate
+, :startDate
+, :endDate
+, :amount
+, :rate
+, :currency
+, :linkedItemId
+, :quantity
+, :itemDetails
+, :createdBy
+, :createdDate
+>>
+
+getInvoiceItemsForInvoices() ::= <<
+  SELECT <allTableFields("")>
+  FROM <tableName()>
+  WHERE invoice_id in (<invoiceIds>)
+  <AND_CHECK_TENANT("")>
+  <defaultOrderBy("")>
+  ;
+>>
+
+getInvoiceItemsBySubscription() ::= <<
+  SELECT <allTableFields("")>
+  FROM <tableName()>
+  WHERE subscription_id = :subscriptionId
+  <AND_CHECK_TENANT("")>
+  <defaultOrderBy("")>
+  ;
+>>
+
+getAdjustedOrRepairedInvoiceItemsByLinkedId() ::= <<
+  SELECT <allTableFields("")>
+  FROM <tableName()>
+  WHERE linked_item_id = :linkedItemId
+  AND type IN ('ITEM_ADJ', 'REPAIR_ADJ')
+  <AND_CHECK_TENANT("")>
+  <defaultOrderBy("")>
+  ;
+>>
+
+updateItemFields() ::= <<
+    UPDATE <tableName()>
+    SET amount = coalesce(:amount, amount),
+        description = coalesce(:description, description),
+        item_details = coalesce(:itemDetails, item_details)
+    WHERE id = :id
+    <AND_CHECK_TENANT("")>;
+>>
+
+
+getInvoiceItemsByParentInvoice() ::= <<
+  SELECT <allTableFields(("items."))>
+  FROM <tableName()> items
+  INNER JOIN invoice_parent_children invRel ON invRel.child_invoice_id = items.invoice_id
+  WHERE invRel.parent_invoice_id = :parentInvoiceId
+  <AND_CHECK_TENANT("items.")>
+  <defaultOrderBy("")>
+  ;
+>>
+
+getAccountCBA() ::= <<
+select coalesce(sum(ii.amount), 0) cba
+from invoice_items ii
+join invoices i on i.id = ii.invoice_id
+where i.status = 'COMMITTED'
+and ii.type = 'CBA_ADJ'
+and <accountRecordIdField("i.")> = :accountRecordId
+and <accountRecordIdField("ii.")> = :accountRecordId
+<AND_CHECK_TENANT("i.")>
+<AND_CHECK_TENANT("ii.")>
+;
+>>
+
+getConsumedCBAItems() ::= <<
+  SELECT <allTableFields("ii.")>
+  FROM <tableName()> ii
+  JOIN invoices i ON i.id = ii.invoice_id
+  WHERE
+  i.status = 'COMMITTED'
+  and ii.type = 'CBA_ADJ'
+  and ii.amount \< 0
+  and <accountRecordIdField("i.")> = :accountRecordId
+  and <accountRecordIdField("ii.")> = :accountRecordId
+  <AND_CHECK_TENANT("i.")>
+  <AND_CHECK_TENANT("ii.")>
+  order by <recordIdField("ii.")> DESC
+  ;
+>>
+
+getRepairMap(ids) ::= <<
+  SELECT
+  ii1.invoice_id the_key
+  , count(ii1.invoice_id) the_count
+  FROM <tableName()> ii1
+  JOIN <tableName()> ii2 on ii1.account_record_id = ii2.account_record_id and ii2.type = 'REPAIR_ADJ' and ii2.linked_item_id = ii1.id
+  JOIN invoices i on i.id = ii2.invoice_id
+  WHERE
+  ii1.invoice_id in (<ids>)
+  and i.status = 'COMMITTED'
+  and ii2.id is not null
+  <AND_CHECK_TENANT("ii1.")>
+  <AND_CHECK_TENANT("ii2.")>
+  <AND_CHECK_TENANT("i.")>
+  group by ii1.invoice_id
+  ;
+>>
+
