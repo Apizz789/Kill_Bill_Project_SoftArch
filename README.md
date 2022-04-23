@@ -1,7 +1,7 @@
 # SOFT_ARCH_2022 Kill_Bill_Project 
 
 **Detial**
-This Project is create for learning Software Architecture by 3rd Computer Engineering Student, King Mongkut's Institute of Technology Ladkrabang. 
+- This Project is create for learning Software Architecture by 3rd Computer Engineering Student, King Mongkut's Institute of Technology Ladkrabang. 
 
 **Member**
 - 62010029 KRITTIKAMAS  SUNOPHAK
