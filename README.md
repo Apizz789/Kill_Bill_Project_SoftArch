@@ -23,5 +23,5 @@
 
 **Documentation**
 - [Kill Bill Documentation](https://docs.killbill.io/latest/internal_design.html).
-- [Report PDF](https://docs.killbill.io/latest/internal_design.html).
-- [Slide PDF](https://docs.killbill.io/latest/internal_design.html).
+- [Report PDF](https://github.com/Apizz789/Kill_Bill_Project_SoftArch/blob/main/Kill%20Bill%20Report.pdf).
+- [Slide PDF]().
