@@ -1,6 +1,7 @@
 # SOFTWARE ARCHITECTURE AND DESIGN 2022 
 
 ## Kill Bill Project
+- Open-Source Subscription Billing & Payments Platform
 
 **Detail**
 - This Project is create for learning Software Architecture by 3rd Computer Engineering Student, King Mongkut's Institute of Technology Ladkrabang. 
