@@ -1,0 +1,28 @@
+@startuml
+
+abstract class OperationControlCallback extends OperationCallbackBase implements OperationCallback {
+
+    # {abstract} doCallSpecificOperationCallback() : Payment
+}
+
+class AuthorizeControlOperation extends OperationControlCallback {
+
+    # doCallSpecificOperationCallback() : Payment
+}
+
+class CaptureControlOperation extends OperationControlCallback {
+
+    # doCallSpecificOperationCallback() : Payment
+}
+
+class ChargebackControlOperation extends OperationControlCallback {
+
+    # doCallSpecificOperationCallback() : Payment
+}
+
+class CompletionControlOperation extends OperationControlCallback {
+
+    # doCallSpecificOperationCallback() : Payment
+}
+
+@enduml
