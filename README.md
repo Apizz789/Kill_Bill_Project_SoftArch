@@ -1,6 +1,6 @@
 # SOFT_ARCH_2022 Kill_Bill_Project 
 
-**Detial**
+**Detail**
 - This Project is create for learning Software Architecture by 3rd Computer Engineering Student, King Mongkut's Institute of Technology Ladkrabang. 
 
 **Member**
