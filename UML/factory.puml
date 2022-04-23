@@ -1,28 +1,20 @@
 @startuml
+interface InvoiceFormatterFactory
+class DefaultInvoiceFormatterFactory implements InvoiceFormatterFactory
+class MockInvoiceFormatterFactory implements InvoiceFormatterFactory
 
-abstract class OperationControlCallback extends OperationCallbackBase implements OperationCallback {
+class DefaultInvoiceFormatter implements InvoiceFormatter
 
-    # {abstract} doCallSpecificOperationCallback() : Payment
+DefaultInvoiceFormatterFactory ..> DefaultInvoiceFormatter
+
+
+class InvoiceFormatterFactory{
+ +createInvoiceFormatter(): InvoiceFormatter
 }
-
-class AuthorizeControlOperation extends OperationControlCallback {
-
-    # doCallSpecificOperationCallback() : Payment
+class DefaultInvoiceFormatterFactory {
+ +createInvoiceFormatter(): InvoiceFormatter
 }
-
-class CaptureControlOperation extends OperationControlCallback {
-
-    # doCallSpecificOperationCallback() : Payment
+class MockInvoiceFormatterFactory {
+ +createInvoiceFormatter(): InvoiceFormatter
 }
-
-class ChargebackControlOperation extends OperationControlCallback {
-
-    # doCallSpecificOperationCallback() : Payment
-}
-
-class CompletionControlOperation extends OperationControlCallback {
-
-    # doCallSpecificOperationCallback() : Payment
-}
-
 @enduml

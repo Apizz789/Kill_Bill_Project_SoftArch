@@ -1,5 +1,4 @@
 @startuml
-
 ApiEventBuilder --|> EventBaseBuilder
 BCDEventBuilder --|> EventBaseBuilder
 PhaseEventBuilder --|> EventBaseBuilder
@@ -8,16 +7,12 @@ ApiEventBuilder --> ApiEvent
 BCDEventBuilder --> BCDEvent
 PhaseEventBuilder --> PhaseEvent
 
+ApiEventBase ..|> ApiEvent
+BCDEventBase ..|> BCDEvent
+PhaseEventBase ..|> PhaseEvent
+
+
 abstract class EventBaseBuilder{
-  - totalOrdering: long
-  - uuid : UUID  
-  - subscriptionId: UUID  
-  - createdDate: DateTime  
-  - updatedDate: DateTime   
-  - effectiveDate: DateTime  
-
-  - isActive: boolean 
-
   + EventBaseBuilder()
   + EventBaseBuilder(event: SubscriptionBaseEvent)
   + EventBaseBuilder(copy: EventBaseBuilder<?>)
@@ -29,50 +24,18 @@ abstract class EventBaseBuilder{
   + getEffectiveDate(): DateTime
   + isActive(): boolean
   + {abstract} build(): SubscriptionBaseEvent
-
 }
 
 class ApiEventBuilder {
-  - apiEventType: ApiEventType
-  - eventPlan: String 
-  - eventPlanPhase: String 
-  - eventPriceList: String 
-  - fromDisk: boolean 
-
   + ApiEventBuilder(apiEvent: ApiEvent)
-  + ApiEventBuilder(base: EventBaseBuilder<?>)
-  + getApiEventType(): ApiEventType 
-  + getEventPlan(): String
-  + getEventPlanPhase(): String
-  + getEventPriceList(): String 
-  + isFromDisk(): boolean
-  + setFromDisk(fromDisk: boolean): ApiEventBuilder
-  + setApiEventType(eventType: ApiEventType): ApiEventBuilder
-  + setEventPlan(eventPlan: String): ApiEventBuilder
-  + setEventPlanPhase(eventPlanPhase: String): ApiEventBuilder
-  + setEventPriceList(eventPriceList: String): ApiEventBuilder
-  + build(): ApiEventBase
 }
 
 class BCDEventBuilder {
-  - billCycleDayLocal: Integer
-
-  + BCDEventBuilder()
   + BCDEventBuilder(event: BCDEvent) 
-  + BCDEventBuilder(base: EventBaseBuilder<?>)
-  + getBillCycleDayLocal(): Integer
-  + setBillCycleDayLocal(billCycleDayLocal: Integer): BCDEventBuilder
 }
 
 class PhaseEventBuilder {
-  - phaseName: String 
-
-  + PhaseEventBuilder()
   + PhaseEventBuilder(phaseEvent: PhaseEvent)
-  + PhaseEventBuilder(base: EventBaseBuilder<?>)
-  + setPhaseName(phaseName: String): PhaseEventBuilder
-  + getPhaseName(): String
-  + build(): PhaseEvent 
 }
 
 interface BCDEvent {
@@ -90,5 +53,4 @@ interface ApiEvent {
 interface PhaseEvent {
   + getPhase(): String
 }
-
 @enduml

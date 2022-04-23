@@ -1,0 +1,18 @@
+@startuml
+AopAllianceMethodInvocationAdapter ..|> org.apache.shiro.aop.MethodInvocation
+AopAllianceMethodInvocationAdapter --> MethodInvocation 
+
+class AopAllianceMethodInvocationAdapter{
+ - mi: MethodInvocation
+ + AopAllianceMethodInvocationAdapter(mi: MethodInvocation)
+ + getMethod(): Method
+ + getArguments():Object[]
+ + toString(): String 
+ + proceed(): Object 
+ + getThis(): Object 
+}
+
+interface MethodInvocation 
+{
+}
+@enduml
