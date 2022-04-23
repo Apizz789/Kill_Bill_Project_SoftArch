@@ -17,3 +17,6 @@
 - This Repository was using code base on [Kill Bill Github](https://github.com/killbill/killbill).
 
 **Documentation**
+- [Kill Bill Documentation](https://docs.killbill.io/latest/internal_design.html).
+- [Report PDF](https://docs.killbill.io/latest/internal_design.html).
+- [Slide PDF](https://docs.killbill.io/latest/internal_design.html).
