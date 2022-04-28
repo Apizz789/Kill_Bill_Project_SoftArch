@@ -1,5 +1,9 @@
 # SOFTWARE ARCHITECTURE AND DESIGN 2022 
 
+![MEMBERS](https://github.com/Apizz789/Kill_Bill_Project_SoftArch/blob/main/Picture%20Art/ALL2.png=640x312)
+
+
+
 ## Kill Bill Project
 - Open-Source Subscription Billing & Payments Platform
 
